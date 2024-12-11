@@ -40,8 +40,8 @@ function getUserNameDropdown(page) {
 
 function getLogoutLink(page) {
     return page.locator("#logout-link");
-}
 
+}
 async function login(page, username, password) {
     await page.goto("/prihlaseni");
     await page.getByLabel("Email").fill(username);
