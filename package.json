@@ -2,13 +2,19 @@
   "name": "automation-playwright",
   "version": "1.0.0",
   "devDependencies": {
-    "@playwright/test": "^1.47.2",
+    "@playwright/test": "^1.49.1",
     "@types/node": "^20.14.11",
     "dotenv": "^16.4.5",
-    "eslint": "^9.9.1"
+    "eslint": "^9.9.1",
+    "playwright-bdd": "^7.5.0"
   },
+<<<<<<< HEAD
   "scripts": {},
   "dependencies": {
     "playwright": "^1.49.0"
   }
 }
+=======
+  "scripts": {}
+}
+>>>>>>> 762f1072c50de868e18a21480648de324ef9bc29
