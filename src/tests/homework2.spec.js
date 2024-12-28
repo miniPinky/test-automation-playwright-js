@@ -1,87 +1,99 @@
 import { test, expect } from './pages/fixtures.js';
-import { OrderPage } from "./pages/order.page.js";
+//import { OrderPage } from "./pages/order.page.js";
 
-test.describe('Navigation test', async () => {
+test.describe('Test for navigation and page loading', async () => {
 
     test('Should navigate to order page through navigation menu', async ({ orderPage }) => {
         await orderPage.page.getByRole('button', { name: 'Pro učitelé' }).click();
         await orderPage.page.getByText('Objednávka pro MŠ/ZŠ').click();
 
-        // Ověření URL a nadpisu
         await expect(orderPage.page).toHaveURL('https://team8-2022brno.herokuapp.com/objednavka/pridat');
         await expect(orderPage.page.locator('h1')).toHaveText('Nová objednávka');
 
-        // Screenshot
-        await orderPage.page.screenshot({ path: 'novaobjednavka.png', fullPage: true });
+        await orderPage.page.screenshot({ path: 'nova_objednavka.png', fullPage: true });
     });
 });
 
-test.describe('New Order test', async () => {
+test.describe('Tests for creating a new order', async () => {
+
+    const defaultFormData = {
+        ico: '08750866',
+        client: 'speedlo s.r.o.',
+        adress: 'Hlaváčova 207, Pardubice 530 02',
+        substitute: 'Jana Nováková',
+        contactName: 'Tereza Pinkasová',
+        phone: '+420603759600',
+        mail: 't.pinkasova007@gmail.com',
+        startDate: '01.01.2025',
+        endDate: '10.01.2025',
+    };
+
+    const campFormData = { 
+        students: '30', 
+        age: '12', 
+        adults: '3',
+        dateOption:'afternoon',
+    };
 
     test.beforeEach('Should navigate to order page', async ({ orderPage }) => {
         await orderPage.navigateToOrderPage();
         await expect(orderPage.page.locator('h1')).toHaveText('Nová objednávka');
       });
 
-    test('ICO check', async ({ orderPage }) => {
-        await orderPage.fillICO({
-            ico: '08750866',
-        });
+    test('Check if Ares works for ICO search', async ({ orderPage }) => {
+        await orderPage.fillICOAndWait('08750866');
         await expect(orderPage.icoLocator).toHaveValue('08750866');
-        //await orderPage.toastMessageLocator.waitFor();
         await expect(orderPage.toastMessageLocator).toBeVisible();
         await expect(orderPage.toastMessageLocator).toHaveText(
             'Data z ARESu se nepodařilo načíst, vyplňte je prosím ručně'
         );
     });
 
-    test('fill form', async ({ page }) => {
-        const order = new OrderPage(page);
+    test('Should successfully fill and validate the order form', async ({ orderPage }) => {
+        const formData = { ...defaultFormData };
 
-        await order.fillOrderForm({
-            ico: '08750866',
-            client: 'speedlo s.r.o.',
-            adress: 'Hlaváčova 207, Pardubice 530 02',
-            substitute: 'Jana Nováková',
-            contactName: 'Tereza Pinkasová',
-            phone: '+420603759600',
-            mail:'t.pinkasova007@gmail.com',
-            startDate:'01.01.2025',
-            endDate:'10.01.2025',
-        });
+        await orderPage.fillOrderForm(formData);
         
-        await expect(order.icoLocator).toHaveValue(fillOrderForm.ico);
-        await expect.soft(order.clientNameLocator).toHaveValue(fillOrderForm.client);
-        await expect(order.clientAdressLocator).toHaveValue(fillOrderForm.adress);
-        await expect(order.substituteLocator).toHaveValue(fillOrderForm.substitute);
-        await expect(order.contactNameLocator).toHaveValue(fillOrderForm.contactName);
-        await expect(order.phoneLocator).toHaveValue(fillOrderForm.phone);
-        await expect(order.mailLocator).toHaveValue(fillOrderForm.mail);
-        await expect(order.firstStartDateLocator).toHaveValue(fillOrderForm.startDate);
-        await expect(order.secondStartDateLocator).toHaveValue(fillOrderForm.startDate);
-        await expect(order.thirdStartDateLocator).toHaveValue(fillOrderForm.startDate);
-        await expect(order.firstEndDateLocator).toHaveValue(fillOrderForm.endDate);
-        await expect(order.secondEndDateLocator).toHaveValue(fillOrderForm.endDate);
-        await expect(order.thirdEndDateLocator).toHaveValue(fillOrderForm.endDate);
+        await expect(orderPage.icoLocator).toHaveValue(formData.ico);
+        await expect(orderPage.clientNameLocator).toHaveValue(formData.client);
+        await expect(orderPage.firstStartDateLocator).toHaveValue(formData.startDate);
+        await expect(orderPage.firstEndDateLocator).toHaveValue(formData.endDate);
 
-        const navTabLocator = page.getByRole('tab', { name: 'Příměstský tábor' });
-        await navTabLocator.click(); 
+        await orderPage.page.getByRole('tab', { name: 'Příměstský tábor' }).click();
+
+        const options = await orderPage.getCampOptions();
+        expect(options).toEqual(['Dopolední', 'Odpolední']);
+        await orderPage.fillCampDetails(campFormData);
         
+        await expect(orderPage.courseOptionLocator).toHaveValue(campFormData.dateOption);
+        await expect(orderPage.numberOfStudentsLocator).toHaveValue(campFormData.students);
+        await expect(orderPage.studentsAgeLocator).toHaveValue(campFormData.age);
+        await expect(orderPage.numberOfAdultsLocator).toHaveValue(campFormData.adults);
 
-        const optionsLocator = await order.courseOptionLocator.locator('option').allTextContents();
-        expect(optionsLocator).toEqual(['Dopolední', 'Odpolední']);
-        await order.courseOptionLocator.selectOption('afternoon');
-        const selectedOptionLocator = await order.courseOptionLocator.inputValue();
-        expect(selectedOptionLocator).toBe('afternoon');
+        await orderPage.page.getByRole('button', { name: 'Uložit objednávku' }).click();
+        await expect(orderPage.page.locator("h3")).toHaveText("Děkujeme za objednávku");
+    
+        await orderPage.page.screenshot({ path: 'dokoncena_objednavka.png', fullPage: true });
+    });
 
-        await expect(order.numberOfStudentsLocator).toBeVisible();
-        await order.numberOfStudentsLocator.fill('30');
+    test('Should not allow submission with invalid email format', async ({ orderPage }) => {
+        const formData = { ...defaultFormData, mail: 'testatest.cz' };
 
-        await expect(order.studentsAgeLocator).toBeVisible();
-        await order.studentsAgeLocator.fill('12');
+        await orderPage.fillOrderForm(formData);
+        await orderPage.page.getByRole('tab', { name: 'Příměstský tábor' }).click();
 
-        await expect(order.numberOfAdultsLocator).toBeVisible();
-        await order.numberOfAdultsLocator.fill('3');
+        await orderPage.fillCampDetails(campFormData);
+
+        await orderPage.page.getByRole('button', { name: 'Uložit objednávku' }).click();
+  
+        await expect(orderPage.page.locator("h1")).toHaveText("Nová objednávka");
+        await expect(orderPage.page).toHaveURL('https://team8-2022brno.herokuapp.com/objednavka/pridat');
+    });
+
+    test.afterEach(async ({ orderPage }, testInfo) => {
+        if (testInfo.status === 'failed') {
+            await orderPage.page.screenshot({ path: 'screenshots/${testInfo.title}.png' });
+        }
     });
 });
 

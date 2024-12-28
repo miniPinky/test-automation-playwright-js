@@ -26,18 +26,14 @@ export class OrderPage {
         await this.page.goto('/objednavka/pridat');
     }
 
-    async fillICO({ ico }) {
+    async fillICOAndWait(ico) {
         await this.icoLocator.fill(ico);
-        await this.page.keyboard.press('Enter');
-        //return new Promise(resolve => setTimeout(resolve, 10000));
-    }
-
-    generateUniqueEmail() {
-         return 'test+' + Date.now() + '@test.cz';
+        await this.page.keyboard.press("Enter");
+        await this.toastMessageLocator.waitFor({ state: 'visible', timeout: 10000 });
     }
 
     async fillOrderForm({ ico, client, adress, substitute, contactName, phone, mail, startDate, endDate }) {
-        await this.icoLocator.fill(ico);
+        await this.fillICOAndWait(ico);
         await this.clientNameLocator.fill(client);
         await this.clientAdressLocator.fill(adress);
         await this.substituteLocator.fill(substitute);
@@ -50,5 +46,20 @@ export class OrderPage {
         await this.secondEndDateLocator.fill(endDate);
         await this.thirdStartDateLocator.fill(startDate);
         await this.thirdEndDateLocator.fill(endDate);
+    }
+   
+    async getCampOptions() {
+        return await this.courseOptionLocator.locator('option').allTextContents();
+    }
+
+    async fillCampForm({ dateOption, students, age, adults }) {
+        await this.courseOptionLocator.selectOption(dateOption);
+        await this.numberOfStudentsLocator.fill(students);
+        await this.studentsAgeLocator.fill(age);
+        await this.numberOfAdultsLocator.fill(adults);
+    }
+
+    async fillCampDetails(campFormData) {
+        await this.fillCampForm(campFormData);
     }
 }
