@@ -29,7 +29,7 @@ export class OrderPage {
     async fillICOAndWait(ico) {
         await this.icoLocator.fill(ico);
         await this.page.keyboard.press("Enter");
-        await this.toastMessageLocator.waitFor({ state: 'visible', timeout: 10000 });
+        await this.toastMessageLocator.waitFor({ state: 'attached', timeout: 10_000 });
     }
 
     async fillOrderForm({ ico, client, adress, substitute, contactName, phone, mail, startDate, endDate }) {
@@ -47,6 +47,10 @@ export class OrderPage {
         await this.thirdStartDateLocator.fill(startDate);
         await this.thirdEndDateLocator.fill(endDate);
     }
+
+    async selectCamp() {
+        await this.page.getByRole('tab', { name: 'Příměstský tábor' }).click();
+    }
    
     async getCampOptions() {
         return await this.courseOptionLocator.locator('option').allTextContents();
@@ -61,5 +65,9 @@ export class OrderPage {
 
     async fillCampDetails(campFormData) {
         await this.fillCampForm(campFormData);
+    }
+
+    async submit() {
+        await this.page.getByRole('button', { name: 'Uložit objednávku' }).click();
     }
 }
