@@ -1,33 +1,38 @@
-import { expect, test } from "@playwright/test";
+import { test, expect } from './pages/fixtures.js';
 import { OrderPage } from "./pages/order.page.js";
 
 test.describe('Navigation test', async () => {
 
-    test('Should navigate to order page through navigation menu', async ({ page }) => {
-        await page.goto('/');
-        await page.getByRole('button', { name: 'Pro učitelé' }).click();
-        await page.getByText('Objednávka pro MŠ/ZŠ').click();
-        await expect(page).toHaveURL('https://team8-2022brno.herokuapp.com/objednavka/pridat');
-        await expect(page.locator('h1')).toHaveText('Nová objednávka');
-        await page.screenshot({ path: 'novaobjednavka.png', fullPage: true });
+    test('Should navigate to order page through navigation menu', async ({ orderPage }) => {
+        await orderPage.page.getByRole('button', { name: 'Pro učitelé' }).click();
+        await orderPage.page.getByText('Objednávka pro MŠ/ZŠ').click();
+
+        // Ověření URL a nadpisu
+        await expect(orderPage.page).toHaveURL('https://team8-2022brno.herokuapp.com/objednavka/pridat');
+        await expect(orderPage.page.locator('h1')).toHaveText('Nová objednávka');
+
+        // Screenshot
+        await orderPage.page.screenshot({ path: 'novaobjednavka.png', fullPage: true });
     });
 });
 
 test.describe('New Order test', async () => {
 
-    test.beforeEach('Should navigate to order page', async ({ page }) => {
-        await page.goto('/objednavka/pridat');
-        await expect(page.locator('h1')).toHaveText('Nová objednávka');
+    test.beforeEach('Should navigate to order page', async ({ orderPage }) => {
+        await orderPage.navigateToOrderPage();
+        await expect(orderPage.page.locator('h1')).toHaveText('Nová objednávka');
       });
 
-    test('ICO check', async ({ page }) => {
-        const order = new OrderPage(page);
-
-        await expect(order.icoLocator).toBeVisible();
-        await order.icoLocator.fill('08750866');
-        await page.keyboard.press('Enter');
-        await expect(order.toastMessageLocator).toBeVisible();
-        await expect(order.toastMessageLocator).toHaveText('Data z ARESu se nepodařilo načíst, vyplňte je prosím ručně')
+    test('ICO check', async ({ orderPage }) => {
+        await orderPage.fillICO({
+            ico: '08750866',
+        });
+        await expect(orderPage.icoLocator).toHaveValue('08750866');
+        //await orderPage.toastMessageLocator.waitFor();
+        await expect(orderPage.toastMessageLocator).toBeVisible();
+        await expect(orderPage.toastMessageLocator).toHaveText(
+            'Data z ARESu se nepodařilo načíst, vyplňte je prosím ručně'
+        );
     });
 
     test('fill form', async ({ page }) => {

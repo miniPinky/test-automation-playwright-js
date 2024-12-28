@@ -22,6 +22,16 @@ export class OrderPage {
         this.numberOfAdultsLocator = page.locator('#camp-adults');
     }
 
+    async navigateToOrderPage() {
+        await this.page.goto('/objednavka/pridat');
+    }
+
+    async fillICO({ ico }) {
+        await this.icoLocator.fill(ico);
+        await this.page.keyboard.press('Enter');
+        //return new Promise(resolve => setTimeout(resolve, 10000));
+    }
+
     generateUniqueEmail() {
          return 'test+' + Date.now() + '@test.cz';
     }
