@@ -28,7 +28,7 @@ export class OrderPage {
 
     async fillICOAndWait(ico) {
         await this.icoLocator.fill(ico);
-        await this.page.keyboard.press("Enter");
+        await this.page.keyboard.press('Enter');
         await this.toastMessageLocator.waitFor({ state: 'attached', timeout: 10_000 });
     }
 

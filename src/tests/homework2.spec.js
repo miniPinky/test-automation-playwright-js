@@ -81,7 +81,7 @@ test.describe('Tests for creating a new order', async () => {
 
         await test.step('Submit the form and verify submit page', async () => {
             await orderPage.submit();
-            await expect(orderPage.page.locator("h3")).toHaveText("Děkujeme za objednávku");
+            await expect(orderPage.page.locator('h3')).toHaveText('Děkujeme za objednávku');
             await orderPage.page.screenshot({ path: 'dokoncena_objednavka.png', fullPage: true });
         });
     });
@@ -100,7 +100,7 @@ test.describe('Tests for creating a new order', async () => {
 
         await test.step('Attempt to submit the form and verify that the form has not been submitted', async () => {
             await orderPage.submit();  
-            await expect(orderPage.page.locator("h1")).toHaveText("Nová objednávka");
+            await expect(orderPage.page.locator('h1')).toHaveText('Nová objednávka');
         });   
     });
 
